@@ -1,0 +1,42 @@
+HOW TO RUN THREAD IN BACKEND WITH THREAD TIMER
+
+import threading
+import simplejson
+
+
+class ProcessBackground(object):
+    '''
+    run background percent increment
+    end by thread event set
+    '''
+    def __init__(self):
+        
+        self.event = threading.Event()
+    
+    
+    def export_percent(self,percent,max_percent,message,websocket):
+        
+        print (percent)
+        if not self.event.is_set():
+            percent+=1
+            websocket.send(text_data = simplejson.dumps({'message':'calculate model accuracy','percent':percent},ignore_nan = True))
+            t = threading.Timer(0.6,self.export_percent,[percent,max_percent,message,websocket])
+            t.start()
+            if percent>max_percent:
+                t.cancel()
+    def run(self,percent,max_percent,websocket,event):
+        
+        th = threading.Thread(target=self.export_percent, args=(percent,max_percent,websocket,event))
+        th.start()
+
+    def stop(self,max_percent,message,websocket):
+        websocket.send(text_data = simplejson.dumps({'message':'calculate model accuracy','percent':max_percent},ignore_nan = True))
+        self.event.set()
+
+    
+
+
+
+          
+          
+          
